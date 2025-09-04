@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel/serverless'; // Bu satırı ekle
+import vercel from '@astrojs/vercel/serverless';
 
+// https://astro.build/config
 export default defineConfig({
-  // ... diğer ayarlarınız
-  output: 'server', // Bu satırı ekle
-  adapter: vercel(), // Bu satırı ekle
+  output: 'server',
+  adapter: vercel()
 });
