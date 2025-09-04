@@ -19,14 +19,17 @@ const { settings, posts } = await client.fetch(query);
         
         <div class="blog-grid">
             {posts.map(post => (
-                <BlogCard post={post} />
+                <article key={post._id} class="blog-card">
+                    <h3>{post.title}</h3>
+                    <p>{post.description}</p>
+                </article>
             ))}
         </div>
     </section>
 
     <footer>
         <div class="container">
-             <div class="copyright">
+            <div class="copyright">
                 <p>{settings.copyrightText}</p>
             </div>
         </div>
