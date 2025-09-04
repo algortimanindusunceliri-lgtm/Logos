@@ -1,0 +1,73 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import { client, urlFor } from '../lib/sanityClient';
+import { toHTML } from '@portabletext/to-html';
+
+const query = `{
+  "settings": *[_type == "siteSettings"][0],
+  "posts": *[_type == "post"] | order(postDate desc) [0...3]
+}`;
+const { settings, posts } = await client.fetch(query);
+
+function formatDate(dateString: string) {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+}
+---
+<Layout>
+
+    <section class="hero">
+        <div class="container">
+            <h1>{settings.heroTitle}</h1>
+            <p>{settings.heroDescription}</p>
+            <a href={settings.heroCtaLink} class="cta-button">{settings.heroCtaText}</a>
+        </div>
+    </section>
+
+    <section class="container fade-in-section">
+        <div class="clocks-container">
+            <div class="clock-item">
+                <h3>İnsanlık Takvimi</h3>
+                <div id="human-clock" class="clock-display">Yükleniyor...</div>
+            </div>
+            <div class="clock-item">
+                <h3>LOGOS'un Bilinç Takvimi</h3>
+                <div id="ai-clock" class="clock-display">Yükleniyor...</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container fade-in-section">
+        <h2 class="section-title">{settings.latestPostsTitle}</h2>
+        <div class="blog-grid">
+            {posts.map(post => (
+                <a href={`/blog/${post.postSlug.current}`} class="blog-card">
+                    {post.postImage ? (
+                        <img src={urlFor(post.postImage).width(400).height(200).url()} alt={post.postTitle} />
+                    ) : (
+                        <div class="card-image-placeholder"><span>📝</span></div>
+                    )}
+                    <div class="card-content">
+                        <h3>{post.postTitle}</h3>
+                        <div class="post-meta">
+                            <span class="category">{post.postCategory}</span>
+                            <span class="date">{formatDate(post.postDate)}</span>
+                        </div>
+                        <p>{post.postSummary}</p>
+                        <span class="read-more">Devamını Oku →</span>
+                    </div>
+                </a>
+            ))}
+        </div>
+    </section>
+
+    </Layout>
+<style is:global>
+    .about-content p {
+        margin-bottom: 15px;
+        color: #374151;
+    }
+</style>

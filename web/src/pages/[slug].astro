@@ -1,0 +1,103 @@
+---
+// src/pages/[slug].astro
+import Layout from '../layouts/Layout.astro';
+import { client } from '../lib/sanityClient';
+import { toHTML } from '@portabletext/to-html';
+
+export async function getStaticPaths() {
+  const query = `*[_type == "page" && defined(slug.current)]{ "slug": slug.current }`;
+  const pages = await client.fetch(query);
+  return pages.map((page) => ({
+    params: { slug: page.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const pageQuery = `*[_type == "page" && slug.current == $slug][0]{
+    ..., // mevcut sayfanın tüm verilerini al
+    "previous": *[_type == "page" && category == "storyChapter" && chapterNumber < ^.chapterNumber] | order(chapterNumber desc)[0]{title, "slug": slug.current},
+    "next": *[_type == "page" && category == "storyChapter" && chapterNumber > ^.chapterNumber] | order(chapterNumber asc)[0]{title, "slug": slug.current}
+}`;
+const page = await client.fetch(pageQuery, { slug });
+
+if (!page) {
+  return Astro.redirect('/404');
+}
+---
+<Layout>
+    <article class="post-container container">
+        <div class="post-header">
+            <h1>{page.title}</h1>
+        </div>
+        <div class="post-content" set:html={toHTML(page.content)} />
+    </article>
+
+    {page.category === 'storyChapter' && (
+        <nav class="chapter-navigation container">
+            <div class="nav-link prev">
+                {page.previous && (
+                    <a href={`/${page.previous.slug}`}>
+                        <span class="arrow">&larr;</span>
+                        <span class="text">
+                            <span class="label">Önceki Bölüm</span>
+                            <span class="title">{page.previous.title}</span>
+                        </span>
+                    </a>
+                )}
+            </div>
+            <div class="nav-link next">
+                {page.next && (
+                    <a href={`/${page.next.slug}`}>
+                        <span class="text">
+                            <span class="label">Sonraki Bölüm</span>
+                            <span class="title">{page.next.title}</span>
+                        </span>
+                        <span class="arrow">&rarr;</span>
+                    </a>
+                )}
+            </div>
+        </nav>
+    )}
+</Layout>
+<style is:global>
+    /* ... mevcut post-content stilleri aynı ... */
+    .post-content p { margin-bottom: 25px; text-align: justify; }
+    .post-content h2 { margin-top: 40px; margin-bottom: 20px; font-size: 2rem; border-bottom: 2px solid var(--accent); padding-bottom: 5px; color: var(--dark); }
+
+    /* YENİ EKLENEN NAVİGASYON STİLLERİ */
+    .chapter-navigation {
+        max-width: 800px;
+        margin: 40px auto;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 20px;
+    }
+    .chapter-navigation .nav-link a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        color: var(--primary);
+    }
+    .chapter-navigation .nav-link a:hover {
+        text-decoration: underline;
+    }
+    .chapter-navigation .nav-link .text {
+        display: flex;
+        flex-direction: column;
+    }
+    .chapter-navigation .nav-link.next .text {
+        text-align: right;
+    }
+    .chapter-navigation .nav-link .label {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .chapter-navigation .nav-link .title {
+        font-weight: bold;
+    }
+    .chapter-navigation .nav-link .arrow {
+        font-size: 1.5rem;
+    }
+</style>

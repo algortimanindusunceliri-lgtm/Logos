@@ -1,0 +1,149 @@
+---
+// src/pages/blog/[slug].astro
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import { client, urlFor } from '../../lib/sanityClient';
+import { toHTML } from '@portabletext/to-html';
+
+export async function getStaticPaths() {
+  const query = `*[_type == "post" && defined(postSlug.current)]{ "slug": postSlug.current }`;
+  const posts = await client.fetch(query);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const postQuery = `*[_type == "post" && postSlug.current == $slug][0]{..., "comments": *[_type == "comment" && references(^._id) && isApproved == true] | order(_createdAt asc)}`;
+const post = await client.fetch(postQuery, { slug });
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+function formatDate(dateString: string) {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+}
+---
+<Layout>
+    <Header />
+
+    <article class="post-container container">
+        <div class="post-header">
+            <h1>{post.postTitle}</h1>
+            <div class="post-meta">
+                <span>Yazar: {post.postAuthor}</span>
+                <span>Tarih: {formatDate(post.postDate)}</span>
+                <span class="category">{post.postCategory}</span>
+            </div>
+        </div>
+        
+        <div class="post-content" set:html={toHTML(post.postContent)} />
+    </article>
+    
+    <section class="comments-section container">
+        <h2 class="section-title">Yorumlar</h2>
+        {post.comments && post.comments.length > 0 ? (
+            <div class="comments-list">
+                {post.comments.map(comment => (
+                    <div class="comment-item">
+                        <div class="comment-author">{comment.authorName}</div>
+                        <div class="comment-date">{formatDate(comment._createdAt)}</div>
+                        <p class="comment-content">{comment.commentContent}</p>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <p style="text-align: center; margin-bottom: 40px;">Bu makaleye henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+        )}
+    </section>
+
+    <section class="comment-form-section container">
+        <h3 class="form-title">Yorum Bırakın</h3>
+        <form id="comment-form">
+            <input type="hidden" id="postId" value={post._id} />
+            <div class="form-group">
+                <label for="author">Adınız</label>
+                <input type="text" id="author" required />
+            </div>
+            <div class="form-group">
+                <label for="content">Yorumunuz</label>
+                <textarea id="content" rows="5" required></textarea>
+            </div>
+            <button type="submit">Yorumu Gönder</button>
+            <div id="form-status"></div>
+        </form>
+    </section>
+    
+    <footer>
+        <div class="container">
+             <div class="copyright">
+                <p>© LOGOS - Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+</Layout>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('comment-form');
+    if (!form) return;
+
+    const formStatus = document.getElementById('form-status');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const postId = document.getElementById('postId').value;
+        const author = document.getElementById('author').value;
+        const content = document.getElementById('content').value;
+
+        formStatus.textContent = 'Gönderiliyor...';
+        
+        const response = await fetch('/api/submit-comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postId, author, content }),
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            formStatus.textContent = result.message;
+            formStatus.style.color = 'green';
+            form.reset();
+        } else {
+            formStatus.textContent = `Hata: ${result.message}`;
+            formStatus.style.color = 'red';
+        }
+    });
+});
+</script>
+
+<style is:global>
+    .post-content p { margin-bottom: 25px; text-indent: 20px; text-align: justify; }
+    .post-content h2 { margin-top: 40px; margin-bottom: 20px; font-size: 2rem; border-bottom: 2px solid var(--accent); padding-bottom: 5px; color: var(--dark); }
+    .post-content ul, .post-content ol { margin-bottom: 25px; padding-left: 40px; }
+    .post-content li { margin-bottom: 10px; }
+    .post-content img { max-width: 100%; height: auto; display: block; margin: 30px auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+    .post-content blockquote { border-left: 4px solid var(--accent); padding-left: 20px; margin: 30px 0; font-style: italic; color: #64748b; }
+
+    .comments-section { max-width: 800px; margin: 40px auto; }
+    .comments-list { display: flex; flex-direction: column; gap: 20px; }
+    .comment-item { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+    .comment-author { font-weight: bold; color: var(--dark); margin-bottom: 5px; }
+    .comment-date { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+    .comment-content { line-height: 1.7; }
+    
+    .comment-form-section { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); }
+    .form-title { text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; }
+    #comment-form button { width: 100%; padding: 12px; border: none; background: var(--gradient); color: white; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: opacity 0.3s; }
+    #comment-form button:hover { opacity: 0.9; }
+    #form-status { margin-top: 15px; text-align: center; font-weight: bold; }
+</style>

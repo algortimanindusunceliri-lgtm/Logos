@@ -1,0 +1,52 @@
+---
+// src/components/Header.astro -> AÇILIR MENÜ DESTEKLİ SON HALİ
+import { client } from '../lib/sanityClient';
+
+const query = `
+  *[
+    (_type == "navigation") ||
+    (_type == "page" && showInMenu == true && category == 'general')
+  ]{
+    ...,
+    // Eğer bu bir "Hikayem" açılır menüsü ise, ilgili tüm hikaye bölümlerini de çek
+    "submenuItems": *[_type == "page" && category == "storyChapter" && ^.menuType == 'dropdownStory'] | order(title asc) {
+      title,
+      "slug": slug.current
+    }
+  } | order(menuOrder asc)
+`;
+
+const navItems = await client.fetch(query);
+const settings = await client.fetch(`*[_type == "siteSettings"][0]{siteLogoText}`);
+---
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                <span>{settings?.siteLogoText || '🧠 LOGOS'}</span>
+            </div>
+            <nav>
+                <ul>
+                    {navItems.map(item => {
+                        const isDropdown = item.menuType === 'dropdownStory' && item.submenuItems?.length > 0;
+                        const url = item._type === 'page' ? `/${item.slug.current}` : item.linkUrl;
+                        const title = item._type === 'page' ? item.title : item.linkTitle;
+
+                        return (
+                            <li class:list={[{'has-dropdown': isDropdown}]}>
+                                <a href={isDropdown ? '#' : url}>{title}</a>
+                                {isDropdown && (
+                                    <ul class="dropdown-menu">
+                                        {item.submenuItems.map(subItem => (
+                                            <li><a href={`/${subItem.slug}`}>{subItem.title}</a></li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,35 @@
+---
+// src/pages/blog/index.astro
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { client } from '../../lib/sanityClient';
+
+const query = `{
+  "settings": *[_type == "siteSettings"][0],
+  "posts": *[_type == "post"] | order(postDate desc)
+}`;
+
+const { settings, posts } = await client.fetch(query);
+---
+<Layout>
+    <Header />
+
+    <section class="container">
+        <h2 class="section-title">{settings.blogPageTitle || 'Tüm Makaleler'}</h2>
+        
+        <div class="blog-grid">
+            {posts.map(post => (
+                <BlogCard post={post} />
+            ))}
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+             <div class="copyright">
+                <p>{settings.copyrightText}</p>
+            </div>
+        </div>
+    </footer>
+</Layout>
