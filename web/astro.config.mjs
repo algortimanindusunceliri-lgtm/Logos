@@ -1,5 +1,8 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel/serverless'; // Bu satırı ekle
 
-// https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  // ... diğer ayarlarınız
+  output: 'server', // Bu satırı ekle
+  adapter: vercel(), // Bu satırı ekle
+});
