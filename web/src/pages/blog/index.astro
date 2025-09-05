@@ -1,8 +1,7 @@
 ---
 // src/pages/blog/index.astro
 import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
-import { client } from '../../lib/sanityClient';
+import { client, urlFor } from '../../lib/sanityClient'; // urlFor'u import ediyoruz
 
 const query = `{
   "settings": *[_type == "siteSettings"][0],
@@ -10,28 +9,36 @@ const query = `{
 }`;
 
 const { settings, posts } = await client.fetch(query);
+
+function formatDate(dateString: string) {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+}
 ---
 <Layout>
-    <Header />
-
     <section class="container">
         <h2 class="section-title">{settings.blogPageTitle || 'Tüm Makaleler'}</h2>
         
-        <div class="blog-grid">
-            {posts.map(post => (
-                <article key={post._id} class="blog-card">
-                    <h3>{post.title}</h3>
-                    <p>{post.description}</p>
-                </article>
-            ))}
+        <div class="accordion-list">
+            {posts && posts.length > 0 ? (
+                posts.map(post => (
+                    <details class="accordion-item">
+                        <summary>{post.postTitle}</summary>
+                        <div class="accordion-content">
+                            <div class="post-meta" style="margin-bottom: 15px;">
+                                <span class="category">{post.postCategory}</span>
+                                <span class="date">{formatDate(post.postDate)}</span>
+                            </div>
+                            <p>{post.postSummary}</p>
+                            <a href={`/blog/${post.postSlug?.current}`} class="read-more">Devamını Oku →</a>
+                        </div>
+                    </details>
+                ))
+            ) : (
+                <p style="text-align: center;">Yayınlanmış hiç makale bulunamadı.</p>
+            )}
         </div>
     </section>
-
-    <footer>
-        <div class="container">
-            <div class="copyright">
-                <p>{settings.copyrightText}</p>
-            </div>
-        </div>
-    </footer>
 </Layout>

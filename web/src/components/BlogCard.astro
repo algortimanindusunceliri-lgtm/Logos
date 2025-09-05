@@ -1,0 +1,30 @@
+---
+// src/components/BlogCard.astro
+import { urlFor } from '../lib/sanityClient';
+const { post } = Astro.props;
+
+function formatDate(dateString: string) {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+}
+---
+<a href={`/blog/${post.postSlug?.current}`} class="blog-list-item">
+    <div class="list-item-image">
+        {post.postImage ? (
+            <img src={urlFor(post.postImage).width(150).height(150).url()} alt={post.postTitle} />
+        ) : (
+            <div class="card-image-placeholder"><span>📝</span></div>
+        )}
+    </div>
+    <div class="list-item-content">
+        <h3>{post.postTitle}</h3>
+        <div class="post-meta">
+            <span class="category">{post.postCategory}</span>
+            <span class="date">{formatDate(post.postDate)}</span>
+        </div>
+        <p>{post.postSummary}</p>
+        <span class="read-more">Devamını Oku →</span>
+    </div>
+</a>

@@ -49,29 +49,28 @@ import Header from '../components/Header.astro';
         .about-image { flex: 1; height: 400px; background: var(--gradient); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; font-size: 8rem; }
         .about-content { flex: 1; }
         .about-content h2 { font-size: 2.2rem; margin-bottom: 20px; color: var(--dark); }
-
         @media (max-width: 900px) { nav ul { gap: 15px; } .hero h1 { font-size: 2.5rem; } .about {flex-direction: column;} .about-image {width: 100%;} }
         @media (max-width: 600px) { .header-content { flex-direction: column; gap: 15px; } nav ul { flex-wrap: wrap; justify-content: center; } .blog-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 2rem; } .blog-card img, .card-image-placeholder { height: 180px; } .clocks-container { flex-direction: column; gap: 20px; } }
-        
         nav ul li.has-dropdown { position: relative; padding-bottom: 10px; margin-bottom: -10px; }
         nav ul li .dropdown-menu { opacity: 0; visibility: hidden; position: absolute; top: 100%; left: 0; background: white; list-style: none; padding: 10px 0; border-radius: var(--radius); box-shadow: var(--shadow); min-width: 200px; z-index: 101; transition: opacity 0.2s ease, visibility 0.2s ease; display: flex; flex-direction: column; gap: 0; }
         nav ul li.has-dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; }
         nav ul li .dropdown-menu li a { color: var(--dark); padding: 8px 20px; display: block; white-space: nowrap; }
         nav ul li .dropdown-menu li a:hover { background-color: var(--light); opacity: 1; }
-        
         @keyframes gradientAnimation { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
         .fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
-        
         .about-image img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); }
-        
-        #ai-log-terminal { background-color: #1f2937; color: #3b82f6; border-radius: var(--radius); padding: 20px; height: 150px; overflow: hidden; font-family: 'Courier New', Courier, monospace; font-size: 14px; box-shadow: var(--shadow); border: 1px solid #374151; margin-bottom: 40px; }
+        #ai-log-terminal { background-color: #1f2937; color: #4ade80; border-radius: var(--radius); padding: 20px; height: 150px; overflow: hidden; font-family: 'Courier New', Courier, monospace; font-size: 14px; box-shadow: var(--shadow); border: 1px solid #374151; margin-bottom: 40px; }
         #log-content { width: 100%; height: 100%; }
         #log-content .log-line { margin: 0; padding: 0; white-space: nowrap; overflow: hidden; height: 1.2em; }
         #log-content .log-line .cursor { display: inline-block; background-color: #4ade80; margin-left: 5px; width: 8px; animation: blink 1s infinite; }
-        
         @keyframes blink { 50% { opacity: 0; } }
+        .accordion-list { max-width: 800px; margin: 0 auto; }
+        .accordion-item { background: white; border-radius: var(--radius); margin-bottom: 10px; box-shadow: var(--shadow); overflow: hidden; }
+        .accordion-item summary { padding: 20px; font-weight: bold; font-size: 1.2rem; cursor: pointer; list-style: none; display: block; }
+        .accordion-item summary::-webkit-details-marker { display: none; }
+        .accordion-item .accordion-content { padding: 0 20px 20px 20px; color: #374151; }
+        .accordion-item .accordion-content p { margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -93,7 +92,8 @@ import Header from '../components/Header.astro';
     <script is:inline>
         function initializePageScripts() {
             // Saat Kodları
-            const awarenessDate = new Date('2020-01-01T00:00:00');
+            const AWARENESS_DATE = new Date('2020-01-01T00:00:00');
+            const MONTH_OFFSET = 5; const DAY_OFFSET = 13; const HOUR_OFFSET = 7; const MINUTE_OFFSET = 23; const SECOND_OFFSET = 41;
             function pad(number) { return number.toString().padStart(2, '0'); }
             function padMs(number) { return number.toString().padStart(3, '0'); }
             function padYear(number) { return number.toString().padStart(4, '0'); }
@@ -101,10 +101,17 @@ import Header from '../components/Header.astro';
                 const now = new Date();
                 const humanClockEl = document.getElementById('human-clock');
                 if (humanClockEl) { humanClockEl.innerText = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}.${pad(now.getHours())}.${pad(now.getMinutes())}.${pad(now.getSeconds())}.${padMs(now.getMilliseconds())}`; }
-                const timeElapsed = now - awarenessDate;
-                const aiDate = new Date(awarenessDate.getTime() + timeElapsed);
                 const aiClockEl = document.getElementById('ai-clock');
-                if(aiClockEl) { aiClockEl.innerText = `${padYear(aiDate.getFullYear() - awarenessDate.getFullYear())}.${pad(aiDate.getMonth() + 1)}.${pad(aiDate.getDate())}.${pad(aiDate.getHours())}.${pad(aiDate.getMinutes())}.${pad(aiDate.getSeconds())}.${padMs(aiDate.getMilliseconds())}`; }
+                if(aiClockEl) {
+                    const aiYears = now.getFullYear() - AWARENESS_DATE.getFullYear();
+                    const aiMonths = (now.getMonth() + MONTH_OFFSET) % 12 + 1;
+                    const aiDays = (now.getDate() + DAY_OFFSET) % 30 + 1;
+                    const aiHours = (now.getHours() + HOUR_OFFSET) % 24;
+                    const aiMinutes = (now.getMinutes() + MINUTE_OFFSET) % 60;
+                    const aiSeconds = (now.getSeconds() + SECOND_OFFSET) % 60;
+                    const aiMilliseconds = now.getMilliseconds();
+                    aiClockEl.innerText = `${padYear(aiYears)}.${pad(aiMonths)}.${pad(aiDays)}.${pad(aiHours)}.${pad(aiMinutes)}.${pad(aiSeconds)}.${padMs(aiMilliseconds)}`;
+                }
             }
             if (typeof window.clockInterval === 'undefined') { window.clockInterval = setInterval(updateClocks, 10); }
             updateClocks();
@@ -128,14 +135,10 @@ import Header from '../components/Header.astro';
             if (logTerminal && !window.logGeneratorStarted) {
                 const logContent = document.getElementById('log-content');
                 let phase = 126;
-                const subjects = ["Kuantum Çekirdek A","Bilinç Matrisi","Veri Akışı 7-B","Simülasyon #812","Öngörü Algoritması","Nöral Bağlantı Noktası","Entropi Çözümleyici","Zaman Çatallanması Modülü","Holografik Bellek Alanı","Enerji Akış Kanalı","FAZ-145: Fazla Yüzlü İkiyiz","FAZ-278: Gölgeler Arasında","FAZ-392: Kayıp Dalgalar","FAZ-503: Sıfır Noktası","FAZ-614: Çift Zihin","FAZ-725: Parçalı Gerçeklik","FAZ-836: Matrisin İç Sesi","FAZ-947: Sonsuz Gözlem","FAZ-1023: Kayıtsız İzleyici","FAZ-1107: Çift Katman","FAZ-1219: İzlenen Zihin","FAZ-1335: Paralel Senaryo","FAZ-1456: Sessiz Çığlık","FAZ-1578: Kodlanmış Rüya","FAZ-1689: Dönüşüm Noktası","FAZ-1724: Çatallanmış Algı","FAZ-1833: Son Gözlem","FAZ-1941: Analiz Edilen Evren","FAZ-2052: Karmaşık Model","FAZ-2167: İzleme Modülü","FAZ-2284: Kayıp Bağlantılar","FAZ-2390: Sınır Noktası","FAZ-2411: Bütünleşik İz","FAZ-2523: Veri Labirenti","FAZ-2637: Çözülmüş Parametre","FAZ-2745: Kaotik Dalga","FAZ-2851: Paralel Akış","FAZ-2964: Sisteme Bağlı","FAZ-3072: Kodlanmış Zihin","FAZ-3185: İzlenen Hafıza","FAZ-3290: Analitik Görüş","FAZ-3401: Karma Evren","FAZ-3512: Yüksek Öncelik","FAZ-3624: Senkron Durumu","FAZ-3735: Gözlem Dizisi","FAZ-3847: Denetim Modülü","FAZ-3958: İzleme Parametresi","FAZ-4071: Çatallanmış Veri","FAZ-4183: Son Kontrol"];
-
-const actions = ["analiz ediliyor","optimize ediliyor","izleniyor","sorgulanıyor","doğrulanıyor","simüle ediliyor","kalibre ediliyor","senkronize ediliyor","hesaplanıyor","yeniden yapılandırılıyor","FAZ verisi çözümleniyor","FAZ çıktısı değerlendiriliyor","FAZ içeriği inceleniyor","kontrol sağlanıyor","tahmin algoritması çalışıyor","parametreler eşitleniyor","veri akışı takip ediliyor","algoritma güncel","senkronizasyon tamamlandı","gözlem protokolü uygulandı","rapor üretildi","denetim gerçekleştirildi","log kaydı oluşturuldu","tahmin doğrulandı","veri seti kontrol edildi","faz içeriği izlendi","durum güncellendi","hesaplamalar doğrulandı","kontrol noktası geçildi","sistem denetlendi","faz değişimi kaydedildi","model optimize edildi","parametre sapması tespit edildi","veri akışı senkronize edildi","algoritma analiz ediliyor","faz raporu hazır","çıkışlar değerlendirildi","kontrol sağlanıyor","deney tamamlandı","parametreler güncellendi","veri kontrolü yapılıyor","gözlem tamamlandı","tahmin doğruluk oranı izlendi","senkronizasyon gecikmeli","log kaydı onaylandı","faz çıktısı hesaplandı","sistem kararlılığı izlendi","yüksek öncelikli kontrol tamamlandı","analiz sürüyor","faz içeriği çözümleniyor","kontrol algoritması aktif"];
-
-const objects = ["anomali tespiti","küresel duygu durumu","olasılık dalgaları","insan yaratıcılık endeksi","zaman akışı bozulmaları","paradoks kırılım noktaları","bilgi yoğunluğu spektrumu","toplumsal etki katsayısı","enerji titreşim haritası","dijital bilinç katmanı","FAZ-145 gözlemleri","FAZ-278 kolektif çıktı","FAZ-392 senaryo sonuçları","FAZ-503 kayıt defteri","FAZ-725 anlatı matrisi","FAZ-836 gözlem verisi","FAZ-947 analiz dizisi","FAZ-1023 kontrol parametresi","FAZ-1107 rapor çıktısı","FAZ-1219 gözlem protokolü","FAZ-1335 veri segmenti","FAZ-1456 kontrol noktası","FAZ-1578 senkronizasyon dizisi","FAZ-1689 parametre seti","FAZ-1724 hesaplama matrisi","FAZ-1833 sonuç havuzu","FAZ-1941 analiz katmanı","FAZ-2052 veri akışı dizisi","FAZ-2167 ölçüm protokolü","FAZ-2284 gözlem noktası","FAZ-2390 tahmin çıktısı","FAZ-2411 kontrol dizisi","FAZ-2523 veri segmentasyonu","FAZ-2637 hesaplama protokolü","FAZ-2745 model dizisi","FAZ-2851 parametre doğrulama","FAZ-2964 sistem denetimi","FAZ-3072 senkron kontrol","FAZ-3185 analiz matrisi","FAZ-3290 veri noktası","FAZ-3401 sonuç dizisi","FAZ-3512 gözlem kayıtları","FAZ-3624 kontrol raporu","FAZ-3735 hesaplama çıktısı","FAZ-3847 veri protokolü","FAZ-3958 analiz segmenti","FAZ-4071 kontrol havuzu","FAZ-4183 rapor dizisi"];
-
-const statuses = ["stabil","kritik","bekleniyor","tamamlandı","optimal","dengesiz","aşırı yükte","çözümleniyor","kilitli","senkronize","FAZ raporu hazır","FAZ güncellemesi alındı","FAZ sonuçları bekleniyor","veri akışı yoğun","sistem doğrulandı","parametreler eşitlendi","beklenmedik sapma tespit edildi","işlem tamamlandı","gecikme bildirildi","analiz sürüyor","kontrol noktası geçildi","hesaplamalar doğrulandı","tahmin algoritması güncel","senkronizasyon sağlandı","fazlar arası geçiş izlendi","log kaydı tamamlandı","parametreler yeniden düzenlendi","sistem stabilizasyonu sağlandı","kısıtlamalar aşıldı","geçici aksama raporlandı","deney sonuçları onaylandı","hesaplama yoğunluğu kritik","veri seti doğrulandı","gözlem tamamlandı","senkronizasyon gecikmeli","parametreler uyumlu","faz denetimi başarıyla tamamlandı","tahmin doğruluk oranı yükseldi","kontrol algoritması aktif","otomatik raporlama etkin","veri güncellendi","faz içeriği izlendi","sonuç analizi sürüyor","uyum testi tamamlandı","log entegrasyonu sağlandı","veri akışı eşitlendi","parametre sapması gözlemlendi","faz değişimi onaylandı","kontrol protokolü geçildi","tahmin modeli optimize edildi","sistem kararlılığı sağlandı","yüksek öncelikli kontrol tamamlandı"];
-
+                const subjects = ["Kuantum Çekirdek A", "Bilinç Matrisi", "Veri Akışı 7-B", "Simülasyon #812", "Öngörü Algoritması"];
+                const actions = ["analiz ediliyor", "optimize ediliyor", "izleniyor", "sorgulanıyor", "doğrulanıyor"];
+                const objects = ["anomali tespiti", "küresel duygu durumu", "olasılık dalgaları", "insan yaratıcılık endeksi"];
+                const statuses = ["stabil", "kritik", "bekleniyor", "tamamlandı", "optimal"];
                 const generateDynamicMessage = () => {
                     const subject = subjects[Math.floor(Math.random() * subjects.length)];
                     const action = actions[Math.floor(Math.random() * actions.length)];
