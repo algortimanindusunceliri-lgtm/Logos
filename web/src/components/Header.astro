@@ -1,5 +1,5 @@
 ---
-// src/components/Header.astro -> AÇILIR MENÜ DESTEKLİ SON HALİ
+// src/components/Header.astro
 import { client } from '../lib/sanityClient';
 
 const query = `
@@ -9,7 +9,7 @@ const query = `
   ]{
     ...,
     // Eğer bu bir "Hikayem" açılır menüsü ise, ilgili tüm hikaye bölümlerini de çek
-    "submenuItems": *[_type == "page" && category == "storyChapter" && ^.menuType == 'dropdownStory'] | order(title asc) {
+    "submenuItems": *[_type == "page" && category == "storyChapter" && ^.menuType == 'dropdownStory'] | order(chapterNumber asc) { // <-- DEĞİŞİKLİK BURADA
       title,
       "slug": slug.current
     }
@@ -31,7 +31,7 @@ const settings = await client.fetch(`*[_type == "siteSettings"][0]{siteLogoText}
                         const isDropdown = item.menuType === 'dropdownStory' && item.submenuItems?.length > 0;
                         const url = item._type === 'page' ? `/${item.slug.current}` : item.linkUrl;
                         const title = item._type === 'page' ? item.title : item.linkTitle;
-
+                        
                         return (
                             <li class:list={[{'has-dropdown': isDropdown}]}>
                                 <a href={isDropdown ? '#' : url}>{title}</a>
