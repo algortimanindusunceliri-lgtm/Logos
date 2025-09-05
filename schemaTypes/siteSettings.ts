@@ -5,95 +5,130 @@ export default defineType({
   name: 'siteSettings',
   title: 'Genel Site Ayarları',
   type: 'document',
+  // YENİ: Alanları sekmeler altında gruplayarak paneli daha kullanışlı hale getiriyoruz
+  groups: [
+    {name: 'colors', title: 'Renk Paleti', default: true},
+    {name: 'general', title: 'Genel Ayarlar'},
+    {name: 'hero', title: 'Ana Sayfa Hero'},
+    {name: 'about', title: 'Ana Sayfa Hakkında'},
+  ],
   fields: [
-    // Genel ve Alt Bilgi Alanları
+    // --- Renk Paleti Alanları ---
+    defineField({
+        name: 'primaryColor',
+        title: 'Ana Renk (Primary)',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#2563eb',
+    }),
+    defineField({
+        name: 'secondaryColor',
+        title: 'İkincil Renk (Secondary)',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#1e40af',
+    }),
+    defineField({
+        name: 'accentColor',
+        title: 'Vurgu Rengi (Accent)',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#3b82f6',
+    }),
+    defineField({
+        name: 'textColor',
+        title: 'Metin Rengi',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#1f2937',
+    }),
+    defineField({
+        name: 'lightColor',
+        title: 'Açık Zemin Rengi',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#f3f4f6',
+    }),
+    defineField({
+        name: 'darkColor',
+        title: 'Koyu Zemin Rengi',
+        type: 'color',
+        group: 'colors',
+        initialValue: '#111827',
+    }),
+
+    // --- Genel Ayarlar ---
     defineField({
       name: 'siteLogoText',
       title: 'Site Logo Metni',
-      type: 'string', // [cite: 44, 45]
-    }),
-    defineField({
-      name: 'footerDescription',
-      title: 'Footer Açıklama Metni',
-      type: 'text', // [cite: 47, 48]
+      type: 'string',
+      group: 'general',
     }),
     defineField({
       name: 'copyrightText',
       title: 'Telif Hakkı Metni',
-      type: 'string', // [cite: 50, 51]
+      type: 'string',
+      group: 'general',
     }),
+     defineField({
+        name: 'blogPageTitle',
+        title: 'Blog Sayfası Başlığı',
+        type: 'string',
+        group: 'general',
+    }),
+    defineField({
+        name: 'latestPostsTitle',
+        title: 'Ana Sayfa - Son Yazılar Bölüm Başlığı',
+        type: 'string',
+        group: 'general',
+    }),
+    
 
-    // Kahraman (Hero) Alanı
+    // --- Ana Sayfa Hero Alanı ---
     defineField({
       name: 'heroTitle',
-      title: 'Ana Sayfa - Kahraman Alanı Başlığı',
-      type: 'string', // [cite: 2, 3]
+      title: 'Başlık',
+      type: 'string',
+      group: 'hero',
     }),
     defineField({
       name: 'heroDescription',
-      title: 'Ana Sayfa - Kahraman Alanı Açıklaması',
-      type: 'text', // [cite: 5, 6]
+      title: 'Açıklama',
+      type: 'text',
+      group: 'hero',
     }),
     defineField({
       name: 'heroCtaText',
-      title: 'Ana Sayfa - Düğme Metni',
-      type: 'string', // [cite: 8, 9]
+      title: 'Düğme Metni',
+      type: 'string',
+      group: 'hero',
     }),
     defineField({
       name: 'heroCtaLink',
-      title: 'Ana Sayfa - Düğme Linki',
-      type: 'string', // [cite: 11, 12]
+      title: 'Düğme Linki',
+      type: 'string',
+      group: 'hero',
     }),
 
-    // Felsefe Bölümü
-    defineField({
-      name: 'philosophyTitle',
-      title: 'Ana Sayfa - Felsefe Bölümü Başlığı',
-      type: 'string', // [cite: 27, 28]
-    }),
-    defineField({
-      name: 'philosophyDescription',
-      title: 'Ana Sayfa - Felsefe Bölümü Açıklaması',
-      type: 'text', // [cite: 30, 31]
-    }),
-
-    // LOGOS Kimdir? Bölümü
+    // --- Ana Sayfa Hakkında Bölümü (Artık Kullanılmıyor ama şemada kalabilir) ---
     defineField({
       name: 'aboutTitle',
-      title: 'Ana Sayfa - Hakkında Bölümü Başlığı',
-      type: 'string', // [cite: 34, 35]
+      title: 'Başlık',
+      type: 'string',
+      group: 'about',
     }),
     defineField({
       name: 'aboutImage',
-      title: 'Ana Sayfa - Hakkında Bölümü Görseli',
-      type: 'image', // [cite: 37, 38]
+      title: 'Görsel',
+      type: 'image',
+      group: 'about',
     }),
     defineField({
         name: 'aboutContent',
-        title: 'Ana Sayfa - Hakkında Bölümü İçeriği',
-        type: 'array', 
-        of: [{type: 'block'}] // [cite: 40, 41, 42]
-    }),
-    
-    // Blog Sayfası
-    defineField({
-        name: 'blogPageTitle',
-        title: 'Blog Sayfası Başlığı',
-        type: 'string', // [cite: 54, 55]
-    }),
-    
-    // Renk Paleti ve Fontlar
-    defineField({
-        name: 'primaryColor',
-        title: 'Ana Renk',
-        type: 'string', // Renk seçici eklentisi ile daha iyi çalışır
-        initialValue: '#2563eb', // [cite: 127, 128]
-    }),
-    defineField({
-        name: 'fontFamily',
-        title: 'Font Ailesi',
-        type: 'string',
-        initialValue: `'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`, // [cite: 143, 144]
+        title: 'İçerik',
+        type: 'array',  
+        of: [{type: 'block'}],
+        group: 'about',
     }),
   ],
 })

@@ -1,16 +1,41 @@
 ---
 // src/layouts/Layout.astro
 import Header from '../components/Header.astro';
+import { client } from '../lib/sanityClient';
+
+// Genel site ayarlarının TÜMÜNÜ çekiyoruz
+const settings = await client.fetch(`*[_type == "siteSettings"][0]`);
+
+// Renklerin hex değerlerini bir CSS değişken string'ine dönüştürüyoruz
+// Eğer Sanity'de renk seçilmemişse, varsayılan (fallback) bir renk kullan
+const styles = settings ? `
+  --primary: ${settings?.primaryColor?.hex || '#2563eb'};
+  --secondary: ${settings?.secondaryColor?.hex || '#1e40af'};
+  --accent: ${settings?.accentColor?.hex || '#3b82f6'};
+  --text: ${settings?.textColor?.hex || '#1f2937'};
+  --light: ${settings?.lightColor?.hex || '#f3f4f6'};
+  --dark: ${settings?.darkColor?.hex || '#111827'};
+` : '';
 ---
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" style={styles}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOGOS - Yapay Zeka Filozofu</title>
     <style is:global>
         .blog-card img { width: 100% !important; height: 200px !important; object-fit: cover !important; display: block !important; }
-        :root { --primary: #2563eb; --secondary: #1e40af; --accent: #3b82f6; --text: #1f2937; --light: #f3f4f6; --dark: #111827; --gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); --radius: 12px; }
+        :root { 
+            --primary: #2563eb; 
+            --secondary: #1e40af; 
+            --accent: #3b82f6; 
+            --text: #1f2937; 
+            --light: #f3f4f6; 
+            --dark: #111827; 
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); 
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); 
+            --radius: 12px; 
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { color: var(--text); line-height: 1.6; background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #e2e8f0, #f8fafc); background-size: 400% 400%; animation: gradientAnimation 15s ease infinite; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -84,7 +109,7 @@ import Header from '../components/Header.astro';
                 <div id="log-content"></div>
             </div>
             <div class="copyright">
-                <p>© 2025 LOGOS - Yapay Zeka Filozofu. Tüm hakları saklıdır.</p>
+                <p>{settings?.copyrightText || '© LOGOS'}</p>
             </div>
         </div>
     </footer>
