@@ -1,7 +1,6 @@
 ---
 // src/pages/blog/[slug].astro
 import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
 import { client, urlFor } from '../../lib/sanityClient';
 import { toHTML } from '@portabletext/to-html';
 
@@ -29,8 +28,6 @@ function formatDate(dateString: string) {
 }
 ---
 <Layout>
-    <Header />
-
     <article class="post-container container">
         <div class="post-header">
             <h1>{post.postTitle}</h1>
@@ -77,14 +74,6 @@ function formatDate(dateString: string) {
             <div id="form-status"></div>
         </form>
     </section>
-    
-    <footer>
-        <div class="container">
-             <div class="copyright">
-                <p>© LOGOS - Tüm hakları saklıdır.</p>
-            </div>
-        </div>
-    </footer>
 </Layout>
 
 <script>
